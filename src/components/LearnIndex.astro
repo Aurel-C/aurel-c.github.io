@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = ui[lang];
+const fr = lang === 'fr';
+const all = (await getCollection('learn', (e) => e.id.startsWith(lang + '/'))).sort((a, b) => a.data.order - b.data.order);
+---
+<Base lang={lang} title={`${t.learn} · Aurélien Cecille`} description={fr ? 'Introductions à la profondeur monoculaire et à la géométrie multi-vues, tirées de ma thèse.' : 'Introductions to monocular depth and multi-view geometry, adapted from my PhD thesis.'}>
+<main class="wrap">
+  <article class="article">
+    <div class="crumbs"><a href={href(lang)}>← {t.back}</a></div>
+    <h1>{t.learn}</h1>
+    <p class="lead">{fr
+      ? "Les deux premiers chapitres de ma thèse posent les bases : comment une image encode la profondeur, et comment un réseau peut l'apprendre à partir de vidéo, sans annotation. Je les ai réécrits ici sous forme d'explications autonomes, avec les équations et les figures."
+      : 'The first two chapters of my thesis lay the groundwork: how an image encodes depth, and how a network can learn it from video without labels. I rewrote them here as standalone explainers, with the equations and figures.'}</p>
+    <div class="toc-list">
+      {all.map((e) => (
+        <a class="toc-item" href={href(lang, `learn/${e.id.split('/').pop()}/`)}>
+          <small>{t.chapter} {e.data.chapter}</small>
+          <strong>{e.data.title}</strong>
+          <span>{e.data.summary}</span>
+        </a>
+      ))}
+    </div>
+  </article>
+</main>
+</Base>

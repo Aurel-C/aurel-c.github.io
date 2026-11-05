@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import Page from '../../../components/PaperPage.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('papers', (e) => e.id.startsWith('fr/'));
+  return entries.map((entry) => ({ params: { slug: entry.id.split('/').pop() }, props: { entry } }));
+}
+const { entry } = Astro.props;
+---
+<Page lang="fr" entry={entry} />

@@ -1,0 +1,28 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+
+interface Props { lang: Lang; entry: CollectionEntry<'projects'>; }
+const { lang, entry } = Astro.props;
+const t = ui[lang];
+const d = entry.data;
+const { Content } = await render(entry);
+---
+<Base lang={lang} title={`${d.title} · Aurélien Cecille`} description={d.summary}>
+<main class="wrap">
+  <article class="article">
+    <div class="crumbs"><a href={href(lang, '#projects')}>← {t.projects}</a></div>
+    <div class="tags">{d.tags.map((tag) => <span>{tag}</span>)}{d.status && <span>{d.status}</span>}</div>
+    <h1>{d.title}</h1>
+    <p class="byline">{lang === 'fr' ? 'Projet personnel de ' : 'Personal project by '}<strong>Aurélien Cecille</strong></p>
+    <p class="lead">{d.summary}</p>
+    {(d.repo || d.pdf) && <div class="plinks">
+      {d.repo && <a href={d.repo}>{t.code}</a>}
+      {d.pdf && <a href={d.pdf}>{lang === 'fr' ? 'document de travail (PDF)' : 'working paper (PDF)'}</a>}
+    </div>}
+    <figure class="hero-fig"><canvas data-thumb={d.thumb} aria-hidden="true"></canvas></figure>
+    <div class="prose"><Content /></div>
+  </article>
+</main>
+</Base>

@@ -1,0 +1,31 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+
+interface Props { lang: Lang; entry: CollectionEntry<'learn'>; }
+const { lang, entry } = Astro.props;
+const t = ui[lang];
+const d = entry.data;
+const { Content } = await render(entry);
+const all = (await getCollection('learn', (e) => e.id.startsWith(lang + '/'))).sort((a, b) => a.data.order - b.data.order);
+const i = all.findIndex((e) => e.id === entry.id);
+const next = all[i + 1];
+const prev = all[i - 1];
+const slug = (id: string) => id.split('/').pop();
+---
+<Base lang={lang} title={`${d.title} · Aurélien Cecille`} description={d.summary}>
+<main class="wrap">
+  <article class="article">
+    <div class="crumbs"><a href={href(lang, 'learn/')}>← {t.learn}</a></div>
+    <span class="venue">{lang === 'fr' ? 'D’après le chapitre' : 'From chapter'} {d.chapter} {lang === 'fr' ? 'de ma thèse' : 'of my thesis'}</span>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.summary}</p>
+    <div class="prose"><Content /></div>
+    <nav class="pager">
+      {prev ? <a href={href(lang, `learn/${slug(prev.id)}/`)}>← {prev.data.title}</a> : <span></span>}
+      {next ? <a href={href(lang, `learn/${slug(next.id)}/`)}>{next.data.title} →</a> : <a href={href(lang, 'thesis/')}>{lang === 'fr' ? 'La thèse' : 'The thesis'} →</a>}
+    </nav>
+  </article>
+</main>
+</Base>

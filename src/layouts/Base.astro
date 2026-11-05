@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import 'katex/dist/katex.min.css';
+import { ui, href, switchPath, type Lang } from '../i18n';
+
+interface Props { lang: Lang; title: string; description: string; }
+const { lang, title, description } = Astro.props;
+const t = ui[lang];
+const other = switchPath(lang, Astro.url.pathname);
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const enPath = lang === 'en' ? Astro.url.pathname : other;
+const frPath = lang === 'fr' ? Astro.url.pathname : other;
+---
+<!doctype html>
+<html lang={lang} data-base={base}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="alternate" hreflang="en" href={new URL(enPath, Astro.site)}>
+  <link rel="alternate" hreflang="fr" href={new URL(frPath, Astro.site)}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:image" content={new URL(base + 'img/photo.jpg', Astro.site)}>
+  <link rel="icon" href={base + 'favicon.svg'} type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,500;0,600;0,700;1,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <script is:inline>
+    try { if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-site-theme', 'dark'); } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href={href(lang)}>Aurélien Cecille</a>
+      <nav class="links" aria-label="Sections">
+        <a class="sec" href={href(lang, '#research')}>{t.research}</a>
+        <a class="sec" href={href(lang, 'thesis/')}>{t.thesis}</a>
+        <a class="sec" href={href(lang, '#projects')}>{t.projects}</a>
+        <a class="sec" href={href(lang, 'learn/')}>{t.learn}</a>
+        <button type="button" class="theme" id="theme-toggle" aria-label={t.themeDark} aria-pressed="false"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21 14.5A9 9 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5Z"/></svg></button>
+        <span class="lang" role="group" aria-label="Language">
+          <a href={enPath} aria-current={lang === 'en' ? 'true' : undefined} hreflang="en">EN</a>
+          <a href={frPath} aria-current={lang === 'fr' ? 'true' : undefined} hreflang="fr">FR</a>
+        </span>
+      </nav>
+    </div>
+  </header>
+  <slot />
+  <footer><div class="wrap">© 2026 Aurélien Cecille · {t.footer}</div></footer>
+  <script is:inline src={base + 'js/site.js'} defer></script>
+</body>
+</html>

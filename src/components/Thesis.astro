@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+import { thesis } from '../data/thesis';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = ui[lang];
+const fr = lang === 'fr';
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const pdf = base + 'files/cecille_phd_thesis.pdf';
+// PDF page = printed page + 12 (front matter)
+const ch = (n: number, title: string, text: string, link?: string, kind?: string) => ({ n, title, text, link, kind });
+const chapters = fr ? [
+  ch(1, 'Introduction', 'Les caméras-rétroviseurs des bus et camions, et pourquoi apprendre la profondeur sans annotation.', '#abstract', 'Résumé ↓'),
+  ch(2, 'Estimation de profondeur monoculaire', 'Indices visuels, modèle sténopé, réseaux, métriques et jeux de données.', href(lang, 'learn/mono-depth/'), 'Explication →'),
+  ch(3, 'Profondeur et pose auto-supervisées', 'Géométrie multi-vues, reprojection, déformation inverse et fonctions de perte.', href(lang, 'learn/multi-view/'), 'Explication →'),
+  ch(4, 'Profondeur métrique monoculaire', "Les indices d'échelle, puis GroCo : la contrainte au sol pour une profondeur auto-supervisée en mètres.", href(lang, 'papers/groco/'), 'Article →'),
+  ch(5, 'Netteté des frontières', 'Une profondeur par mélange de gaussiennes, propagée à travers toute la chaîne auto-supervisée.', href(lang, 'papers/sob/'), 'Article →'),
+  ch(6, 'Conclusions et perspectives', 'Ce que la structure apporte à l’auto-supervision, et les pistes ouvertes.', pdf + '#page=96', 'PDF →'),
+] : [
+  ch(1, 'Introduction', 'Camera mirrors on buses and trucks, and why depth should be learned without labels.', '#abstract', 'Abstract ↓'),
+  ch(2, 'Monocular Depth Estimation', 'Visual cues, the pinhole model, networks, metrics and datasets.', href(lang, 'learn/mono-depth/'), 'Explainer →'),
+  ch(3, 'Self-Supervised Depth and Pose Estimation', 'Multi-view geometry, reprojection, inverse warping and the loss functions.', href(lang, 'learn/multi-view/'), 'Explainer →'),
+  ch(4, 'Monocular Metric Depth Estimation', 'Scale cues, then GroCo: a ground constraint for self-supervised depth in metres.', href(lang, 'papers/groco/'), 'Paper →'),
+  ch(5, 'Boundary Sharpness in Depth Estimation', 'Gaussian-mixture depth propagated through the whole self-supervised pipeline.', href(lang, 'papers/sob/'), 'Paper →'),
+  ch(6, 'Conclusions and Perspectives', 'What structure brings to self-supervision, and open directions.', pdf + '#page=96', 'PDF →'),
+];
+---
+<Base lang={lang} title={fr ? 'Thèse · Aurélien Cecille' : 'PhD thesis · Aurélien Cecille'}
+  description={fr ? 'Thèse : estimation de profondeur monoculaire auto-supervisée intégrant la structure.' : 'PhD thesis: structure-aware self-supervised monocular depth estimation.'}>
+<main class="wrap">
+  <article class="article">
+    <div class="crumbs"><a href={href(lang)}>← {t.back}</a></div>
+    <span class="venue">{fr ? 'Thèse de doctorat' : 'PhD thesis'} · LIRIS, INSA Lyon · Visual Behavior · 2023–2026</span>
+    <h1>Structure-Aware Self-Supervised Monocular Depth Estimation</h1>
+    {fr && <p class="byline">Profondeur monoculaire : apprentissage auto-supervisé intégrant la structure</p>}
+    <p class="byline"><strong>Aurélien Cecille</strong> · {fr ? 'codirigée par Stefan Duffner (INSA Lyon) et Franck Davoine (CNRS), avec Rémi Agier et Thibault Neveu (Visual Behavior)' : 'co-supervised by Stefan Duffner (INSA Lyon) and Franck Davoine (CNRS), with Rémi Agier and Thibault Neveu (Visual Behavior)'}</p>
+    <p class="lead">{fr
+      ? "Peut-on apprendre à une caméra à mesurer des distances en mètres, avec des contours d'objets nets, uniquement à partir de vidéo et sans aucune annotation de profondeur ? Cette thèse répond en injectant de la structure dans l'apprentissage auto-supervisé : le sol donne l'échelle, et prédire deux profondeurs par pixel rend les frontières nettes."
+      : 'Can a camera learn to measure distances in metres, with sharp object boundaries, from video alone and without any depth labels? This thesis answers by putting structure into self-supervised learning: the ground gives the scale, and predicting two depths per pixel keeps boundaries sharp.'}</p>
+    <div class="plinks"><a href={pdf}>{t.manuscript}</a></div>
+    <h2 class="sec-title">{fr ? 'Chapitres' : 'Chapters'}</h2>
+    <div class="toc-list">
+      {chapters.map((c) => (
+        <a class="toc-item" href={c.link}><small>{t.chapter} {c.n}</small><strong>{c.title}</strong><span>{c.text}</span><em class="go">{c.kind}</em></a>
+      ))}
+    </div>
+    <div class="prose">
+      <h2 id="abstract">{t.abstract}</h2>
+      {thesis.abstract[lang].map((p) => <p>{p}</p>)}
+    </div>
+  </article>
+</main>
+</Base>

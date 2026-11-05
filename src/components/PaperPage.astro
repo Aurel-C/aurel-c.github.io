@@ -1,0 +1,39 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+
+interface Props { lang: Lang; entry: CollectionEntry<'papers'>; }
+const { lang, entry } = Astro.props;
+const t = ui[lang];
+const d = entry.data;
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const bibId = 'bib-' + entry.id.split('/').pop();
+---
+<Base lang={lang} title={`${d.title} · Aurélien Cecille`} description={d.tldr}>
+<main class="wrap">
+  <article class="article">
+    <div class="crumbs"><a href={href(lang, '#research')}>← {t.publications}</a></div>
+    <span class="venue">{d.venue} {d.year}{d.award && <b> · {d.award}</b>}</span>
+    <h1>{d.title}</h1>
+    <p class="byline" set:html={d.authors.replace('A. Cecille', '<strong>A. Cecille</strong>')}></p>
+    <div class="plinks">
+      {d.arxiv && <a href={d.arxiv}>arXiv</a>}
+      {d.code && <a href={d.code}>{t.code}</a>}
+      {d.video && <a href="#video">{t.video}</a>}
+      <a href={`#${bibId}`}>BibTeX</a>
+    </div>
+    <figure class="hero-fig"><canvas data-thumb={d.thumb} aria-hidden="true"></canvas></figure>
+    <p class="lead">{d.tldr}</p>
+    <div class="prose">
+      <Content />
+      <h2 id={bibId}>BibTeX</h2>
+      <div class="bibwrap">
+        <button type="button" data-copy={`${bibId}-pre`} data-label={t.copy} data-done={t.copied}>{t.copy}</button>
+        <pre class="bib" id={`${bibId}-pre`}>{d.bibtex}</pre>
+      </div>
+    </div>
+  </article>
+</main>
+</Base>

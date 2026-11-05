@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ui, href, type Lang } from '../i18n';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = ui[lang];
+const fr = lang === 'fr';
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const slug = (id: string) => id.split('/').pop();
+const papers = (await getCollection('papers', (e) => e.id.startsWith(lang + '/'))).sort((a, b) => a.data.order - b.data.order);
+const projects = (await getCollection('projects', (e) => e.id.startsWith(lang + '/'))).sort((a, b) => a.data.order - b.data.order);
+
+const jobs = [
+  { when: '2023 – 2026', title: fr ? 'Doctorat en vision par ordinateur' : 'PhD in Computer Vision', org: fr ? 'LIRIS, INSA Lyon · thèse CIFRE avec Visual Behavior' : 'LIRIS, INSA Lyon · industrial PhD with Visual Behavior' },
+  { when: '2022 – 2025', title: fr ? 'Ingénieur de recherche' : 'Research Engineer', org: 'Visual Behavior, Lyon',
+    text: fr ? "Détection, segmentation et profondeur pour robots mobiles et véhicules intelligents ; cartes d'occupation pour une navigation sûre ; un système d'aide à la conduite en production." : 'Detection, segmentation and depth for mobile robots and intelligent vehicles; occupancy maps for safe navigation; a production driver-assistance system.' },
+  { when: '2022', title: fr ? 'Stagiaire ingénieur IA' : 'AI Engineer Intern', org: 'Orange',
+    text: fr ? "Segmentation de câbles fibre optique, apprentissage few-shot et méta-apprentissage, latents de GAN avec peu d'annotations." : 'Fibre-optic cable segmentation, few-shot and meta-learning, GAN latents for low-annotation settings.' },
+  { when: '2020 – 2021', title: fr ? 'Stagiaire ingénieur IA' : 'AI Engineer Intern', org: 'Visual Behavior',
+    text: fr ? 'SLAM monoculaire à partir de profondeur, pose et flot optique auto-supervisés, projeté en vue de dessus.' : "Monocular SLAM from self-supervised depth, pose and optical flow, projected to a bird's-eye-view map." },
+  { when: '2017 – 2022', title: fr ? "Diplôme d'ingénieur, informatique" : "Master's degree in Computer Science", org: fr ? 'Université de Technologie de Troyes (UTT)' : 'University of Technology of Troyes (UTT)' },
+];
+---
+<Base lang={lang} title={fr ? 'Aurélien Cecille · Vision par ordinateur' : 'Aurélien Cecille · Computer vision'}
+  description={fr ? 'Chercheur en vision par ordinateur : estimation de profondeur monoculaire auto-supervisée, perception 3D.' : 'Computer vision researcher: self-supervised monocular depth estimation and 3D perception.'}>
+<main class="wrap" id="top">
+  <div class="hero">
+    <div>
+      <div class="who">
+        <img class="avatar" src={base + 'img/photo.jpg'} alt="Aurélien Cecille" width="72" height="72">
+        <div><small>{t.role}</small><span>{t.place}</span></div>
+      </div>
+      <h1>{fr ? <>Apprendre à une seule caméra à voir en <em>3D</em>.</> : <>Teaching a single camera to see in <em>3D</em>.</>}</h1>
+      <p class="lede">{fr
+        ? "Je suis chercheur en vision par ordinateur, spécialisé en perception 3D auto-supervisée. Ma thèse au LIRIS (INSA Lyon) et chez Visual Behavior portait sur l'estimation de profondeur métrique et nette à partir d'une seule caméra, sans annotation de profondeur. En parallèle, j'ai passé trois ans à développer la perception de robots et de véhicules."
+        : "I'm a computer vision researcher working on self-supervised 3D perception. My PhD at LIRIS (INSA Lyon) and Visual Behavior focused on metric, sharp depth from one camera, trained without depth labels. Before and alongside it, I spent three years building perception for robots and vehicles."}</p>
+    </div>
+    <figure class="depth" aria-label={fr ? 'Une photo de rue transformée en nuage de points 3D grâce à la profondeur prédite' : 'A street photo lifted into a 3D point cloud using its predicted depth'}>
+      <canvas id="cloud"></canvas>
+      <span class="cap" id="stage">RGB input · KITTI</span>
+      <span class="modes" role="group" aria-label="Point colour">
+        <button type="button" id="mode-rgb" aria-pressed="true">rgb</button>
+        <button type="button" id="mode-depth" aria-pressed="false">{t.depth}</button>
+      </span>
+      <div class="scale" id="dscale" hidden><span>5 m</span><span class="bar"></span><span>55 m</span></div>
+      <span class="hint">{t.drag}</span>
+    </figure>
+  </div>
+
+  <section class="block" id="research">
+    <div class="label">{t.publications}</div>
+    <div>
+      <h2>{t.firstAuthor}</h2>
+      <div class="papers">
+        {papers.map((p) => (
+          <article class="paper">
+            <a class="thumb" href={href(lang, `papers/${slug(p.id)}/`)} aria-label={p.data.title}><canvas data-thumb={p.data.thumb}></canvas></a>
+            <div>
+              <span class="venue">{p.data.venue} {p.data.year}{p.data.award && <b> · {p.data.award}</b>}</span>
+              <h3><a href={href(lang, `papers/${slug(p.id)}/`)}>{p.data.title}</a></h3>
+              <p class="authors" set:html={p.data.authors.replace('A. Cecille', '<strong>A. Cecille</strong>')}></p>
+              <p class="tldr">{p.data.tldr}</p>
+              <div class="plinks">
+                <a href={href(lang, `papers/${slug(p.id)}/`)}>{t.projectPage}</a>
+                {p.data.arxiv && <a href={p.data.arxiv}>arXiv</a>}
+                {p.data.code && <a href={p.data.code}>{t.code}</a>}
+                <button type="button" data-bib={`bib-${slug(p.id)}`}>BibTeX</button>
+              </div>
+              <pre class="bib" id={`bib-${slug(p.id)}`} hidden>{p.data.bibtex}</pre>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="thesis">
+    <div class="label">{fr ? 'Thèse' : 'PhD thesis'}</div>
+    <div class="thesis">
+      <span class="meta">LIRIS · INSA Lyon · Visual Behavior · 2023–2026</span>
+      <h3><a href={href(lang, 'thesis/')} style="color:inherit;text-decoration:none">Structure-Aware Self-Supervised Monocular Depth Estimation</a></h3>
+      <p>{fr ? "Comment faire respecter la structure de la scène à des réseaux de profondeur entraînés sur de la vidéo brute : le sol sur lequel ils reposent, et les frontières entre les objets." : 'How to make depth networks trained from raw video respect the structure of the scene: the ground they stand on, and the boundaries between objects.'}</p>
+      <div class="plinks">
+        <a href={href(lang, 'thesis/')}>{t.projectPage}</a>
+        <a href={href(lang, 'learn/')}>{t.learn}</a>
+        <a href={base + 'files/cecille_phd_thesis.pdf'}>{t.manuscript}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="experience">
+    <div class="label">{t.experience}</div>
+    <div class="timeline">
+      {jobs.map((j) => (
+        <div class="job"><span class="when">{j.when}</span><div><h3>{j.title}</h3><span class="org">{j.org}</span>{j.text && <p>{j.text}</p>}</div></div>
+      ))}
+    </div>
+  </section>
+
+  <section class="block" id="projects">
+    <div class="label">{t.projects}</div>
+    <div>
+      <h2>{t.sideProjects}</h2>
+      <div class="projects">
+        {projects.map((p) => (
+          <article class="proj">
+            <a class="pthumb" href={href(lang, `projects/${slug(p.id)}/`)} aria-label={p.data.title}><canvas data-thumb={p.data.thumb}></canvas></a>
+            <strong><a href={href(lang, `projects/${slug(p.id)}/`)}>{p.data.title}</a></strong>
+            <span>{p.data.summary}</span>
+            <div class="tags">{p.data.tags.map((tag) => <span>{tag}</span>)}{p.data.status && <span>{p.data.status}</span>}</div>
+            <a class="more" href={href(lang, `projects/${slug(p.id)}/`)}>{t.readMore} →</a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="cv">
+    <div class="label">{t.contact}</div>
+    <div class="contact">
+      <a class="mail" href="mailto:cecille.aurelien@gmail.com">cecille.aurelien@gmail.com</a>
+      <a href={base + 'files/Aurelien_Cecille_CV.pdf'}>{t.downloadCv}</a>
+      <span class="elsewhere"><a href="https://scholar.google.com/citations?user=nNCogfMAAAAJ">Google Scholar</a> · <a href="https://github.com/aurel-c">GitHub</a> · <a href="https://www.linkedin.com/in/aurelien-cecille">LinkedIn</a></span>
+    </div>
+  </section>
+</main>
+</Base>
